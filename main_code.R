@@ -1,4 +1,4 @@
-### Data preparation------------------------------------------------------------
+# Data preparation------------------------------------------------------------
 
 
 
@@ -86,7 +86,7 @@ summary(stroke_dt)
 # 7. average BMI : 29.08, min: 10.30, and max: 97.60
 # 8. From 5110 data, there were 789 people who smoked and 1892 people who didn’t smoke
 
-#-Data Explanation-----------------------------------------------------------------------
+# Data Explanation-----------------------------------------------------------------------
 #understanding correlation
 variables_of_interest <- c("age",
                            "bmi",
@@ -130,6 +130,136 @@ urg_avg <- aggregate(bmi+avg_glucose_level ~ Residence_type,stroke_dt,
 urg_avg
 # These isn't much variation  in the mean value of avg_glucose_level 
 # between urban and rural regions
+# which traits leads to stroke
+  par(mfrow = c(1, 1))
+plot(xtabs(stroke~ work_type + ever_married, stroke_dt))
+xtabs(heart_disease ~ work_type + smoking_status, stroke_dt)
+xtabs(hypertension ~ work_type + smoking_status, stroke_dt)
+xtabs(stroke ~ work_type + smoking_status, stroke_dt)
+xtabs( stroke~ work_type + AgeCat+smoking_status, stroke_dt)
+
+plot(xtabs(heart_disease ~ work_type + smoking_status, stroke_dt))
+plot(xtabs(hypertension ~ work_type + smoking_status, stroke_dt))
+plot(xtabs(stroke ~ work_type + smoking_status, stroke_dt))
+
+# As per the data elder patient working in private sector who never smoked 
+# is the trait with most stroke 
+final_dt <- subset(stroke_dt, AgeCat == "Elder" & work_type == "Private" & 
+                     smoking_status == "never smoked" & stroke == "1")
+
 
 # Data Analysis---------------------------------------------------------------------
+# Q1---which gender is mostly effected by stroke----
+##Research Question---- which gender is mostly effected by stroke ---
+
+# Defining null and alternative  hypothesis 
+
+# H0:-female are more likely to get stroke
+# H1:-male are more likely to get stroke 
+
+# Defining dependent and independent variables
+# dependent :- stroke 
+# independent :- gender 
+
+# variable type
+# both the variable for the hypothesis is categorical 
+# statical method chisq.test()
+stroke_dt$gender <- factor(stroke_dt$gender,levels = c("Female","Male", "Other"),
+                           labels = c("Female","Male","Female"))
+
+fisher.test(table(stroke_dt$gender, stroke_dt$stroke))
+chisq.test(table(stroke_dt$gender, stroke_dt$stroke),correct = FALSE)
+
+# X-squared = 0.47259, df = 2, p-value = 0.7895
+
+# Q2----Does age effect stroke----
+##Research Question---- Does age effect stroke ---
+
+# Defining null and alternative  hypothesis 
+
+# H0:- young age patients are more likely to get stroke
+# H1:- older age patients are more  likely to get stroke 
+
+# Defining dependent and independent variables
+# dependent :- stroke
+# independent :- age
+stroke_dt$AgeCat[stroke_dt$age >= 45] <- "Elder"
+stroke_dt$AgeCat[stroke_dt$age >= 26 & stroke_dt$age <= 44] <- "Middle Aged"
+stroke_dt$AgeCat[stroke_dt$age <= 25] <- "Young"
+stroke_dt$AgeCat<- factor(stroke_dt$AgeCat, order = TRUE,
+                          levels = c("Young", "Middle Aged", "Elder"))
+table(stroke_dt$AgeCat, stroke_dt$stroke)
+chisq.test(table(stroke_dt$AgeCat, stroke_dt$stroke))
+
+# Result as the p value is less than 0.05 null hypotheses is  rejected 
+# conclude that there is a statistically significant association 
+# between the variables
+
+
+
+
+
+
+# Q3-Does age has a effect on BMI-----
+##Research Question---- Does age effect BMI ---
+
+# Defining null and alternative  hypothesis 
+
+# H0:- no significant association between the variables.
+# H1:- significant association between the variables. 
+
+# Defining dependent and independent variables
+# dependent :- bmi
+# independent :- age
+
+# both the variables are continuous 
+
+shapiro.test(stroke_dt$bmi[3:5000])
+shapiro.test(stroke_dt$age[0:5000])
+# both the variables are not normally distributed 
+cor.test(stroke_dt$age, stroke_dt$bmi,
+         method = "spearman",
+         alternative = "greater")
+# Result as the p value is less than 0.05 null hypotheses is  rejected 
+# conclude that there is a statistically significant association 
+# between the variables
+
+# Q4---Does smoking effect stroke----
+# Defining null and alternative  hypothesis 
+
+# H0:- no significant association between the variables.
+# H1:- significant association between the variables. 
+
+# Defining dependent and independent variables
+# dependent :- stroke
+# independent :- work type
+
+# both the variables are categorical 
+xtabs(stroke~ work_type + smoking_status,
+                 stroke_dt)
+table(stroke_dt$smoking_status, stroke_dt$stroke)
+chisq.test(table(stroke_dt$smoking_status, stroke_dt$stroke))
+
+# Result as the p value is less than 0.05 null hypotheses is  rejected 
+# conclude that there is a statistically significant association 
+# between the variables
+
+# Q5---Marital status effect on heart disease----
+#Defining null and alternative  hypothesis 
+
+# H0:- no significant association between the variables.
+# H1:- significant association between the variables. 
+
+# Defining dependent and independent variables
+# dependent :- hear disease
+# independent :- ever_married
+
+# both the variables are categorical 
+
+chisq.test(table(stroke_dt$ever_married, stroke_dt$heart_disease))
+
+# Result as the p value is less than 0.05 null hypotheses is  rejected 
+# conclude that there is a statistically significant association 
+# between the variables
+
 
